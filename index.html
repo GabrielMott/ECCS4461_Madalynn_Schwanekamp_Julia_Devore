@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capstone Project Assignment Tool</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #F1F5F9;
+            color: #1E293B;
+            min-height: 100vh;
+        }
+
+        header {
+            background: linear-gradient(135deg, #0A0A0A 0%, #1F1F1F 100%);
+            color: white;
+            padding: 32px 24px;
+            text-align: center;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+            border-bottom: 4px solid #EA580C;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            font-size: 1rem;
+            opacity: 0.85;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .main {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+            padding: 32px;
+            margin-bottom: 24px;
+        }
+
+        .card-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #1E293B;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-title .badge {
+            background: #FED7AA;
+            color: #9A3412;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 99px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .card-desc {
+            font-size: 0.9rem;
+            color: #64748B;
+            margin-bottom: 20px;
+        }
+
+        .template-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #C2410C;
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-decoration: none;
+            margin-bottom: 16px;
+            padding: 6px 12px;
+            background: #FFF7ED;
+            border-radius: 8px;
+            transition: background 0.15s;
+        }
+
+        .template-link:hover { background: #FED7AA; }
+
+        .upload-area {
+            border: 2px dashed #CBD5E1;
+            border-radius: 12px;
+            padding: 28px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #F8FAFC;
+            position: relative;
+        }
+
+        .upload-area:hover, .upload-area.drag-over {
+            border-color: #EA580C;
+            background: #FFF7ED;
+        }
+
+        .upload-area input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+
+        .upload-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .upload-label {
+            font-size: 0.95rem;
+            color: #475569;
+            font-weight: 500;
+        }
+
+        .upload-hint {
+            font-size: 0.8rem;
+            color: #94A3B8;
+            margin-top: 4px;
+        }
+
+        .file-chosen {
+            display: none;
+            font-size: 0.85rem;
+            color: #C2410C;
+            font-weight: 600;
+            margin-top: 10px;
+            padding: 6px 14px;
+            background: #FFF7ED;
+            border-radius: 8px;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #EA580C 0%, #C2410C 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 16px 24px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            letter-spacing: 0.2px;
+            box-shadow: 0 4px 16px rgba(234,88,12,0.4);
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(234,88,12,0.5);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 32px;
+            color: #64748B;
+        }
+
+        .spinner {
+            width: 44px;
+            height: 44px;
+            border: 4px solid #E2E8F0;
+            border-top-color: #EA580C;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .error-box {
+            display: none;
+            background: #FEF2F2;
+            border: 1px solid #FECACA;
+            border-radius: 12px;
+            padding: 16px 20px;
+            color: #B91C1C;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .results-card {
+            display: none;
+        }
+
+        .results-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .results-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1E293B;
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #0A0A0A;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            border: 2px solid #EA580C;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.35);
+            transition: all 0.2s;
+        }
+
+        .download-btn:hover {
+            background: #EA580C;
+            border-color: #0A0A0A;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(234,88,12,0.45);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .stat-box {
+            background: #F8FAFC;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid #E2E8F0;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #0A0A0A;
+            line-height: 1;
+        }
+
+        .stat-number.green { color: #EA580C; }
+        .stat-number.red { color: #DC2626; }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #64748B;
+            font-weight: 500;
+            margin-top: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .projects-table-wrap {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid #E2E8F0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        thead tr {
+            background: #0A0A0A;
+            color: white;
+        }
+
+        th {
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        tbody tr:nth-child(even) { background: #F8FAFC; }
+        tbody tr:hover { background: #FFF7ED; }
+
+        td {
+            padding: 11px 16px;
+            border-top: 1px solid #E2E8F0;
+            color: #374151;
+        }
+
+        .progress-bar-wrap {
+            height: 8px;
+            background: #E2E8F0;
+            border-radius: 99px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #FB923C, #EA580C);
+            border-radius: 99px;
+            transition: width 0.6s ease;
+        }
+
+        .progress-bar.full { background: linear-gradient(90deg, #EA580C, #0A0A0A); }
+
+        .seats-fraction {
+            font-size: 0.8rem;
+            color: #64748B;
+        }
+
+        .section-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #94A3B8;
+            font-weight: 600;
+            margin-bottom: 14px;
+        }
+
+        .unassigned-warning {
+            background: #FEF2F2;
+            border: 1px solid #FECACA;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-top: 20px;
+            color: #B91C1C;
+            font-size: 0.9rem;
+        }
+
+        .unassigned-warning strong { display: block; margin-bottom: 4px; }
+
+        .how-it-works {
+            background: #F8FAFC;
+            border-radius: 12px;
+            padding: 20px 24px;
+            border: 1px solid #E2E8F0;
+        }
+
+        .how-it-works h3 {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #374151;
+            margin-bottom: 12px;
+        }
+
+        .steps {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .step {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            font-size: 0.875rem;
+            color: #4B5563;
+        }
+
+        .step-num {
+            flex-shrink: 0;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #EA580C;
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Capstone Project Assignment Tool</h1>
+    <p>Upload your student preferences and project requirements to automatically generate optimal team assignments.</p>
+</header>
+
+<div class="main">
+
+    <div class="card">
+        <div class="card-title">How it works</div>
+        <div class="how-it-works" style="margin-top:16px">
+            <div class="steps">
+                <div class="step">
+                    <div class="step-num">1</div>
+                    <div>Download the templates below and fill in your student list and project requirements.</div>
+                </div>
+                <div class="step">
+                    <div class="step-num">2</div>
+                    <div>Upload both Excel files using the form below.</div>
+                </div>
+                <div class="step">
+                    <div class="step-num">3</div>
+                    <div>The tool assigns students to their highest available preference while respecting each project's seat count and major requirements.</div>
+                </div>
+                <div class="step">
+                    <div class="step-num">4</div>
+                    <div>Download the results Excel file with each project's full roster, including each student's major and which preference rank they received.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="errorBox" class="error-box" style="display:none">
+        <span style="font-size:1.2rem">&#9888;</span>
+        <span id="errorMsg"></span>
+    </div>
+
+    <form id="assignForm" enctype="multipart/form-data">
+
+        <div class="card">
+            <div class="card-title">
+                Student File
+                <span class="badge">Required</span>
+            </div>
+            <div class="card-desc">
+                Excel file with columns: <strong>Student Name</strong>, <strong>Major</strong>, <strong>Rank 1</strong> through <strong>Rank 5</strong> (each rank is the project name the student wants for that preference).
+            </div>
+            <a href="/template/students" class="template-link" download>
+                &#8659; Download Student Template
+            </a>
+            <div class="upload-area" id="studentsUpload">
+                <input type="file" name="students_file" id="studentsFile" accept=".xlsx" required>
+                <span class="upload-icon">&#128196;</span>
+                <div class="upload-label">Click or drag your student Excel file here</div>
+                <div class="upload-hint">.xlsx files only</div>
+            </div>
+            <div class="file-chosen" id="studentsChosen">&#10003; <span id="studentsName"></span></div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">
+                Projects File
+                <span class="badge">Required</span>
+            </div>
+            <div class="card-desc">
+                Excel file with columns: <strong>Project Name</strong>, <strong>Total Seats</strong>, and one column per major (e.g. <em>Computer Science Seats</em>) specifying how many students of each major should be assigned.
+            </div>
+            <a href="/template/projects" class="template-link" download>
+                &#8659; Download Projects Template
+            </a>
+            <div class="upload-area" id="projectsUpload">
+                <input type="file" name="projects_file" id="projectsFile" accept=".xlsx" required>
+                <span class="upload-icon">&#128203;</span>
+                <div class="upload-label">Click or drag your projects Excel file here</div>
+                <div class="upload-hint">.xlsx files only</div>
+            </div>
+            <div class="file-chosen" id="projectsChosen" >&#10003; <span id="projectsName"></span></div>
+        </div>
+
+        <div class="card" style="padding: 24px 32px">
+            <button type="submit" class="submit-btn" id="submitBtn">
+                Generate Assignments
+            </button>
+        </div>
+
+    </form>
+
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <div>Processing assignments...</div>
+    </div>
+
+    <div class="card results-card" id="resultsCard">
+        <div class="results-header">
+            <div class="results-title">Assignment Results</div>
+            <button class="download-btn" id="downloadBtn">
+                &#8659; Download Results Excel
+            </button>
+        </div>
+
+        <div class="stats-grid" id="statsGrid"></div>
+
+        <div class="section-label">Project Breakdown</div>
+        <div class="projects-table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Project</th>
+                        <th>Students Assigned</th>
+                        <th>Seats</th>
+                    </tr>
+                </thead>
+                <tbody id="projectsTableBody"></tbody>
+            </table>
+        </div>
+
+        <div id="unassignedWarning" class="unassigned-warning" style="display:none">
+            <strong>&#9888; Some students could not be assigned</strong>
+            <span id="unassignedDetail"></span>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    let resultFileB64 = null;
+
+    function setupUpload(inputId, uploadAreaId, chosenId, nameId) {
+        const input = document.getElementById(inputId);
+        const area = document.getElementById(uploadAreaId);
+        const chosen = document.getElementById(chosenId);
+        const nameSpan = document.getElementById(nameId);
+
+        input.addEventListener('change', () => {
+            if (input.files[0]) {
+                nameSpan.textContent = input.files[0].name;
+                chosen.style.display = 'inline-flex';
+            }
+        });
+
+        area.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            area.classList.add('drag-over');
+        });
+        area.addEventListener('dragleave', () => area.classList.remove('drag-over'));
+        area.addEventListener('drop', (e) => {
+            e.preventDefault();
+            area.classList.remove('drag-over');
+            if (e.dataTransfer.files[0]) {
+                const dt = new DataTransfer();
+                dt.items.add(e.dataTransfer.files[0]);
+                input.files = dt.files;
+                nameSpan.textContent = e.dataTransfer.files[0].name;
+                chosen.style.display = 'inline-flex';
+            }
+        });
+    }
+
+    setupUpload('studentsFile', 'studentsUpload', 'studentsChosen', 'studentsName');
+    setupUpload('projectsFile', 'projectsUpload', 'projectsChosen', 'projectsName');
+
+    document.getElementById('assignForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const errorBox = document.getElementById('errorBox');
+        const errorMsg = document.getElementById('errorMsg');
+        const loading = document.getElementById('loading');
+        const resultsCard = document.getElementById('resultsCard');
+        const submitBtn = document.getElementById('submitBtn');
+
+        errorBox.style.display = 'none';
+        resultsCard.style.display = 'none';
+        loading.style.display = 'block';
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Processing...';
+
+        try {
+            const formData = new FormData(e.target);
+            const resp = await fetch('/assign', { method: 'POST', body: formData });
+            const data = await resp.json();
+
+            if (!resp.ok || data.error) {
+                errorMsg.textContent = data.error || 'An unexpected error occurred.';
+                errorBox.style.display = 'flex';
+                return;
+            }
+
+            resultFileB64 = data.file;
+            renderResults(data.summary);
+
+        } catch (err) {
+            errorMsg.textContent = 'Network error: ' + err.message;
+            errorBox.style.display = 'flex';
+        } finally {
+            loading.style.display = 'none';
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Generate Assignments';
+        }
+    });
+
+    function renderResults(summary) {
+        const statsGrid = document.getElementById('statsGrid');
+        const pct = summary.total_students > 0
+            ? Math.round(summary.assigned / summary.total_students * 100) : 0;
+
+        statsGrid.innerHTML = `
+            <div class="stat-box">
+                <div class="stat-number">${summary.total_students}</div>
+                <div class="stat-label">Total Students</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number green">${summary.assigned}</div>
+                <div class="stat-label">Assigned</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number ${summary.unassigned > 0 ? 'red' : 'green'}">${summary.unassigned}</div>
+                <div class="stat-label">Unassigned</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">${pct}%</div>
+                <div class="stat-label">Placement Rate</div>
+            </div>
+        `;
+
+        const tbody = document.getElementById('projectsTableBody');
+        tbody.innerHTML = '';
+        for (const p of summary.projects) {
+            const pct = p.total_seats > 0 ? Math.round(p.assigned / p.total_seats * 100) : 0;
+            const full = p.assigned >= p.total_seats;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${escHtml(p.name)}</strong></td>
+                <td>
+                    <div class="seats-fraction">${p.assigned} of ${p.total_seats} seats filled</div>
+                    <div class="progress-bar-wrap"><div class="progress-bar ${full ? 'full' : ''}" style="width:${Math.min(pct,100)}%"></div></div>
+                </td>
+                <td>${p.total_seats}</td>
+            `;
+            tbody.appendChild(tr);
+        }
+
+        const warn = document.getElementById('unassignedWarning');
+        if (summary.unassigned > 0) {
+            document.getElementById('unassignedDetail').textContent =
+                `${summary.unassigned} student${summary.unassigned > 1 ? 's' : ''} could not be placed into any of their preferred projects due to capacity or major constraints. They are listed in the "Unassigned Students" sheet of the downloaded Excel file.`;
+            warn.style.display = 'block';
+        } else {
+            warn.style.display = 'none';
+        }
+
+        document.getElementById('resultsCard').style.display = 'block';
+        document.getElementById('resultsCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    document.getElementById('downloadBtn').addEventListener('click', () => {
+        if (!resultFileB64) return;
+        const binary = atob(resultFileB64);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        const blob = new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'capstone_assignments.xlsx';
+        a.click();
+        URL.revokeObjectURL(url);
+    });
+
+    function escHtml(str) {
+        return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+</script>
+
+</body>
+</html>
