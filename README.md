@@ -22,7 +22,7 @@ pip install -r requirements.txt
 python app.py
 ```
 
-Then open [http://localhost:5000](http://localhost:5000).
+Then open [http://localhost:3000](http://localhost:3000).
 
 ## Project structure
 
