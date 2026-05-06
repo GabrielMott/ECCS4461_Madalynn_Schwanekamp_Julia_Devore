@@ -31,3 +31,7 @@ app.py                  # Flask backend + assignment algorithm
 templates/index.html    # Frontend UI (Jinja2 template)
 requirements.txt        # Python dependencies
 ```
+
+## References
+This project was made with the help of Replit which can be accessed through [https://replit.com](https://replit.com).
+Replit, Inc. (n.d.). Replit. https://replit.com
